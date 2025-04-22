@@ -1,9 +1,12 @@
 name: Generate manifests
 
+# ① 퍼미션 선언
+permissions:
+  contents: write
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
       - 'images/**'
       - 'Icon/**'
@@ -13,9 +16,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # ② checkout 시 토큰 전달
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
-      # ← 이 부분 추가 ↓
       - name: Install jq
         run: |
           sudo apt-get update
@@ -23,12 +29,9 @@ jobs:
 
       - name: Generate images.json and icons.json
         run: |
-          # images/ 폴더
           ls images/*.{jpg,jpeg,png} 2>/dev/null \
             | xargs -n1 basename \
             | jq -R -s -c 'split("\n")[:-1]' > images/images.json
-
-          # Icon/ 폴더
           ls Icon/*.{svg,png,jpg} 2>/dev/null \
             | xargs -n1 basename \
             | jq -R -s -c 'split("\n")[:-1]' > Icon/icons.json
