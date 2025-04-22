@@ -56,6 +56,7 @@ function createCard(meta) {
   const img = document.createElement('img');
   img.src = meta.src;
   img.alt = meta.title;
+  img.loading = 'lazy';
   div.appendChild(img);
   div.onclick = () => openOverlay(meta);
   return div;
