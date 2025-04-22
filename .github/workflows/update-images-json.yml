@@ -1,0 +1,33 @@
+name: Generate manifests
+
+on:
+  push:
+    paths:
+      - 'images/**'
+      - 'Icon/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate images.json and icons.json
+        run: |
+          # images/
+          ls images/*.{jpg,jpeg,png} 2>/dev/null \
+            | xargs -n1 basename \
+            | jq -R -s -c 'split("\n")[:-1]' > images/images.json
+
+          # Icon/
+          ls Icon/*.{svg,png,jpg} 2>/dev/null \
+            | xargs -n1 basename \
+            | jq -R -s -c 'split("\n")[:-1]' > Icon/icons.json
+
+      - name: Commit manifests
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add images/images.json Icon/icons.json
+          git commit -m "chore: update image/icon manifests" || echo "no changes"
+          git push
