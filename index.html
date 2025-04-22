@@ -1,0 +1,40 @@
+<!-- ========== index.html (배너 제거 버전) ========== -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>미소를 담다, 미담</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <button id="menu-btn" aria-label="Menu">
+    <img src="icon/daisy-full.png" alt="Menu" />
+  </button>
+  <aside id="sidebar">
+    <section id="year-list"></section>
+    <hr />
+    <section id="artist-info">
+      <br>
+      <p>미소를 담다, 미담</p>
+      <br>
+      <p>contact : <a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
+    </section>
+  </aside>
+
+  <main id="gallery"></main>
+
+  <!-- 확대 오버레이 -->
+  <div id="overlay" class="hidden">
+    <div id="overlay-content">
+      <img id="overlay-img" alt="" />
+      <div id="overlay-meta">
+        <h3></h3><p></p><time></time>
+      </div>
+      <button id="close-btn" aria-label="close">×</button>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
