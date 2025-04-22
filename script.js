@@ -1,6 +1,6 @@
-/* ========== script.js (디버깅용) ========== */
+/* ========== script.js (최종 JSON 기반 로더) ========== */
 
-/* DOM 요소 캐시 */
+/* DOM */
 const GALLERY   = document.getElementById('gallery');
 const YEAR_LIST = document.getElementById('year-list');
 const OVERLAY   = document.getElementById('overlay');
@@ -13,23 +13,20 @@ const SIDEBAR   = document.getElementById('sidebar');
 let META_LIST = [];
 
 /**
- * 1) images/images.json 을 불러와 파일 목록을 가져옵니다.
- *    실패 시 상태 코드와 에러를 콘솔에 출력합니다.
+ * 1) images/images.json 을 불러옵니다.
  */
 async function fetchImageList() {
-  console.log('▶️ fetchImageList: 시작');
-  let files = [];
-  try {
-    const res = await fetch('images/images.json');
-    console.log('fetch images.json status:', res.status);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    files = await res.json();
-    console.log('parsed JSON:', files);
-  } catch (err) {
-    console.error('❌ fetchImageList 에러:', err);
+  const res = await fetch('images/images.json');
+  if (!res.ok) {
+    console.error('❌ images.json 로드 실패:', res.status);
     return [];
   }
-  return files.map(name => ({ filename: name, src: 'images/' + name }));
+  const files = await res.json();        // ["file1.png","file2.jpg",...]
+
+  return files.map(name => ({
+    filename: name,
+    src:      `images/${name}`           // 올바른 상대 경로
+  }));
 }
 
 /**
@@ -38,10 +35,10 @@ async function fetchImageList() {
 function parseMeta({ filename, src }) {
   const [base] = filename.split(/\.(?=[^.]+$)/);
   const parts  = base.split('_');
-  let [title = '', desc = '', date = ''] = parts;
+  let [title='', desc='', date=''] = parts;
   if (parts.length === 2) [title, date] = parts;
   return {
-    title: title.replace(/-/g,' ').trim() || 'Untitled',
+    title: title.replace(/-/g, ' ').trim() || 'Untitled',
     desc,
     date,
     year: date.slice(0,4),
