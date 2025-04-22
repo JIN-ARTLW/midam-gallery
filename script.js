@@ -1,7 +1,6 @@
-/* ========== script.js (정렬 롤백 버전) ========== */
-const IMAGE_DIR = 'images/';
+/* ========== script.js ========== */
 
-/* DOM */
+/* DOM 요소 캐시 */
 const GALLERY   = document.getElementById('gallery');
 const YEAR_LIST = document.getElementById('year-list');
 const OVERLAY   = document.getElementById('overlay');
@@ -13,62 +12,85 @@ const SIDEBAR   = document.getElementById('sidebar');
 
 let META_LIST = [];
 
-/* 파일 목록 */
-async function fetchImageList(){
-  const res  = await fetch(IMAGE_DIR);
-  const html = await res.text();
-  const reg  = /href="([^"?]*\.(?:jpg|jpeg|png))"/gi;
-  return [...html.matchAll(reg)].map(m=>m[1]);
-}
-
-/* 파일명 파싱 */
-function parseMeta(file){
-  const decoded = decodeURIComponent(file);
-  const [name]  = decoded.split(/\.(?=[^.]+$)/);
-  const dateReg = /(\d{4})-(\d{2})-(\d{2})$/;
-  const m = name.match(dateReg);
-
-  let epoch=-Infinity, date='', year='';
-  if(m){ 
-    const [_, y, mo, d] = m; 
-    date  = `${y}-${mo}-${d}`; 
-    year  = y; 
-    epoch = new Date(+y, +mo-1, +d).getTime(); 
+/**
+ * 1) images/images.json 을 불러와 파일 목록을 가져옵니다.
+ */
+async function fetchImageList() {
+  const res = await fetch('images/images.json');
+  if (!res.ok) {
+    console.error('images.json not found:', res.status);
+    return [];
   }
+  const files = await res.json();  // ["file1.png","file2.jpg", ...]
 
-  const prefix = m 
-    ? name.slice(0, -m[0].length).replace(/[_-]+$/, '') 
-    : name;
-  const [t='', dsc=''] = prefix.split('_');
-  const title = t.replace(/-/g,' ').trim() || 'Untitled';
-  const desc  = dsc.replace(/-/g,' ').trim();
-
-  return { title, desc, date, year, epoch, src: IMAGE_DIR + file };
+  return files.map(name => ({
+    filename: name,
+    src:      'images/' + name
+  }));
 }
 
-/* 카드 */
-function createCard(m){
-  const d = document.createElement('div');
-  d.className    = 'card';
-  d.dataset.year = m.year;
+/**
+ * 2) 파일명 → 메타데이터 객체
+ */
+function parseMeta({ filename, src }) {
+  // 확장자 제거
+  const [base] = filename.split(/\.(?=[^.]+$)/);
+  // 제목_설명_YYYY-MM-DD or 제목_YYYY-MM-DD
+  const parts = base.split('_');
+  let [title = '', desc = '', date = ''] = parts;
+  if (parts.length === 2) [title, date] = parts;
+
+  return {
+    title: title.replace(/-/g, ' ').trim() || 'Untitled',
+    desc,
+    date,
+    year: date.slice(0, 4),
+    src
+  };
+}
+
+/**
+ * 3) 카드 DOM 생성
+ */
+function createCard(meta) {
+  const div = document.createElement('div');
+  div.className    = 'card';
+  div.dataset.year = meta.year;
 
   const img = document.createElement('img');
-  img.src = m.src;
-  img.alt = m.title;
-  d.appendChild(img);
-  d.onclick = () => openOverlay(m);
+  img.src = meta.src;
+  img.alt = meta.title;
+  div.appendChild(img);
 
-  return d;
+  div.onclick = () => openOverlay(meta);
+  return div;
 }
 
-/* 렌더 */
-function renderCards(list){
+/**
+ * 4) 오버레이 열기/닫기
+ */
+function openOverlay(meta) {
+  O_IMG.src = meta.src;
+  O_META.querySelector('h3').textContent   = meta.title;
+  O_META.querySelector('p').textContent    = meta.desc;
+  O_META.querySelector('time').textContent = meta.date;
+  OVERLAY.classList.remove('hidden');
+}
+CLOSE_BTN.onclick = () => OVERLAY.classList.add('hidden');
+OVERLAY.onclick   = e => { if (e.target === OVERLAY) OVERLAY.classList.add('hidden'); };
+
+/**
+ * 5) 카드 렌더링
+ */
+function renderCards(arr) {
   GALLERY.innerHTML = '';
-  list.forEach(m => GALLERY.appendChild(createCard(m)));
+  arr.forEach(m => GALLERY.appendChild(createCard(m)));
 }
 
-/* 사이드바 */
-function buildYearList(years){
+/**
+ * 6) 사이드바(전체/연도별) 링크 생성
+ */
+function buildYearList(years) {
   YEAR_LIST.innerHTML = '';
   const ul = document.createElement('ul');
 
@@ -103,34 +125,26 @@ function buildYearList(years){
   YEAR_LIST.appendChild(ul);
 }
 
-/* 오버레이 */
-function openOverlay(m){
-  O_IMG.src = m.src;
-  O_META.children[0].textContent = m.title;
-  O_META.children[1].textContent = m.desc;
-  O_META.children[2].textContent = m.date;
-  OVERLAY.classList.remove('hidden');
-}
-
-CLOSE_BTN.onclick = () => OVERLAY.classList.add('hidden');
-OVERLAY.onclick   = e => {
-  if (e.target === OVERLAY) OVERLAY.classList.add('hidden');
-};
-
 /* 햄버거 메뉴 토글 */
 MENU_BTN.onclick = () => SIDEBAR.classList.toggle('open');
 
-/* 초기화 */
+/**
+ * 7) 초기화
+ */
 (async function init(){
-  const files = await fetchImageList();
-  META_LIST = files
-    .map(parseMeta)
-    .sort((a, b) => b.epoch - a.epoch);  // 최신→과거
+  try {
+    const items = await fetchImageList();
+    META_LIST = items
+      .map(parseMeta)
+      .sort((a, b) => b.date.localeCompare(a.date)); // 최신→과거
 
-  const years = [...new Set(
-    META_LIST.filter(m => m.year).map(m => m.year)
-  )].sort((a, b) => b - a);
+    const years = [...new Set(META_LIST.map(m => m.year).filter(Boolean))]
+      .sort((a, b) => b - a);
 
-  buildYearList(years);
-  renderCards(META_LIST);
+    buildYearList(years);
+    renderCards(META_LIST);
+  } catch(err) {
+    console.error(err);
+    GALLERY.innerHTML = '<p>이미지 로딩 중 오류가 발생했습니다.</p>';
+  }
 })();
