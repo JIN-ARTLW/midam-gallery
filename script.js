@@ -57,13 +57,6 @@ function createCard(meta) {
   img.src = meta.src;
   img.alt = meta.title;
   img.loading = 'lazy';
-  img.srcset = `
-  images/300/${meta.filename} 300w,
-  images/600/${meta.filename} 600w,
-  images/900/${meta.filename} 900w
-`;
-img.sizes = "(max-width:600px) 100vw, 300px";
-
   div.appendChild(img);
   div.onclick = () => openOverlay(meta);
   return div;
