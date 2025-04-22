@@ -1,6 +1,5 @@
 name: Generate manifests
 
-# ① 퍼미션 선언
 permissions:
   contents: write
 
@@ -16,30 +15,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # ② checkout 시 토큰 전달
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
-      - name: Install jq
+      - name: Generate JSON Manifests without jq
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+          #— images/images.json 생성
+          echo -n '[' > images/images.json
+          first=true
+          for f in images/*.{jpg,jpeg,png}; do
+            [ -e "$f" ] || continue
+            name="${f##*/}"
+            if [ "$first" = true ]; then
+              first=false
+            else
+              echo -n ',' >> images/images.json
+            fi
+            printf '%s' "\"$name\"" >> images/images.json
+          done
+          echo ']' >> images/images.json
 
-      - name: Generate images.json and icons.json
-        run: |
-          ls images/*.{jpg,jpeg,png} 2>/dev/null \
-            | xargs -n1 basename \
-            | jq -R -s -c 'split("\n")[:-1]' > images/images.json
-          ls Icon/*.{svg,png,jpg} 2>/dev/null \
-            | xargs -n1 basename \
-            | jq -R -s -c 'split("\n")[:-1]' > Icon/icons.json
+          #— Icon/icons.json 생성
+          echo -n '[' > Icon/icons.json
+          first=true
+          for f in Icon/*.{svg,png,jpg}; do
+            [ -e "$f" ] || continue
+            name="${f##*/}"
+            if [ "$first" = true ]; then
+              first=false
+            else
+              echo -n ',' >> Icon/icons.json
+            fi
+            printf '%s' "\"$name\"" >> Icon/icons.json
+          done
+          echo ']' >> Icon/icons.json
 
-      - name: Commit manifests
+      - name: Commit Manifests
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add images/images.json Icon/icons.json
-          git commit -m "chore: update image/icon manifests" || echo "no changes"
+          git commit -m "chore: update manifests" || echo "No changes to commit"
           git push
