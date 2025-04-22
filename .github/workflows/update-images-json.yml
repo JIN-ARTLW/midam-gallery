@@ -2,9 +2,12 @@ name: Generate manifests
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'images/**'
       - 'Icon/**'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,14 +15,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # ← 이 부분 추가 ↓
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
       - name: Generate images.json and icons.json
         run: |
-          # images/
+          # images/ 폴더
           ls images/*.{jpg,jpeg,png} 2>/dev/null \
             | xargs -n1 basename \
             | jq -R -s -c 'split("\n")[:-1]' > images/images.json
 
-          # Icon/
+          # Icon/ 폴더
           ls Icon/*.{svg,png,jpg} 2>/dev/null \
             | xargs -n1 basename \
             | jq -R -s -c 'split("\n")[:-1]' > Icon/icons.json
