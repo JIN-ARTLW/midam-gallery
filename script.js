@@ -53,8 +53,10 @@
    const div = document.createElement('div');
    div.className    = 'card';
    div.dataset.year = meta.year;
+   // const img = document.createElement('img');
+   // img.src = meta.src;
    const img = document.createElement('img');
-   img.src = meta.src;
+   img.src = `images/thumbs/${meta.filename}`;  // 썸네일만 로드
    img.alt = meta.title;
    img.loading = 'lazy';
    div.appendChild(img);
