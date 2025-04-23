@@ -1,6 +1,6 @@
-/* ========== script.js (최종 JSON 기반 로더) ========== */
+/* ========== script.js (JSON 기반 로더 + 커스텀 Lazy-Load) ========== */
 
-/* DOM */
+/* — DOM 요소 캐시 — */
 const GALLERY   = document.getElementById('gallery');
 const YEAR_LIST = document.getElementById('year-list');
 const OVERLAY   = document.getElementById('overlay');
@@ -22,7 +22,6 @@ async function fetchImageList() {
     return [];
   }
   const files = await res.json();        // ["file1.png","file2.jpg",...]
-
   return files.map(name => ({
     filename: name,
     src:      `images/${name}`           // 올바른 상대 경로
@@ -47,23 +46,64 @@ function parseMeta({ filename, src }) {
 }
 
 /**
- * 3) 카드 생성
+ * 3) 카드 생성 (커스텀 Lazy-Load 적용)
  */
 function createCard(meta) {
   const div = document.createElement('div');
   div.className    = 'card';
   div.dataset.year = meta.year;
+
   const img = document.createElement('img');
-  img.src = meta.src;
-  img.alt = meta.title;
-  img.loading = 'lazy';
+  // placeholder: 작은 투명 SVG (레이아웃 시프트 방지)
+  img.src         = 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>';
+  img.dataset.src = meta.src;       // 실제 이미지는 data-src 에만
+  img.alt         = meta.title;
+
   div.appendChild(img);
   div.onclick = () => openOverlay(meta);
   return div;
 }
 
 /**
- * 4) 오버레이
+ * — 화면에 보이는 순간 이미지를 로드해 주는 함수 —
+ */
+function lazyLoadImages() {
+  const imgs = document.querySelectorAll('img[data-src]');
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          obs.unobserve(img);
+        }
+      });
+    }, { rootMargin: '200px 0px' });
+
+    imgs.forEach(img => io.observe(img));
+  } else {
+    // 폴백: 스크롤마다 체크
+    const onScroll = () => {
+      imgs.forEach(img => {
+        if (img.dataset.src &&
+            img.getBoundingClientRect().top < window.innerHeight + 200) {
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+        }
+      });
+      if ([...imgs].every(i => !i.dataset.src)) {
+        window.removeEventListener('scroll', onScroll);
+      }
+    };
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+  }
+}
+
+/**
+ * 4) 오버레이 열기/닫기
  */
 function openOverlay(meta) {
   O_IMG.src = meta.src;
@@ -76,26 +116,27 @@ CLOSE_BTN.onclick = () => OVERLAY.classList.add('hidden');
 OVERLAY.onclick   = e => { if (e.target === OVERLAY) OVERLAY.classList.add('hidden'); };
 
 /**
- * 5) 렌더
+ * 5) 카드 렌더링
  */
 function renderCards(arr) {
-  console.log('▶️ renderCards: count=', arr.length);
   GALLERY.innerHTML = '';
   arr.forEach(m => GALLERY.appendChild(createCard(m)));
+  // 렌더 후 lazy-load 관찰 시작
+  lazyLoadImages();
 }
 
 /**
- * 6) 사이드바 링크
+ * 6) 사이드바(전체/연도) 링크 생성
  */
 function buildYearList(years) {
-  console.log('▶️ buildYearList:', years);
   YEAR_LIST.innerHTML = '';
   const ul = document.createElement('ul');
 
-  // 전체
+  // 전체 보기
   const liAll = document.createElement('li');
   const aAll  = document.createElement('a');
-  aAll.textContent = '전체'; aAll.href = '#';
+  aAll.textContent = '전체';
+  aAll.href = '#';
   aAll.onclick = e => {
     e.preventDefault();
     renderCards(META_LIST);
@@ -104,14 +145,15 @@ function buildYearList(years) {
   liAll.appendChild(aAll);
   ul.appendChild(liAll);
 
-  // 연도별
+  // 연도별 보기
   years.forEach(y => {
     const li = document.createElement('li');
     const a  = document.createElement('a');
-    a.textContent = y; a.href = '#';
+    a.textContent = y;
+    a.href = '#';
     a.onclick = e => {
       e.preventDefault();
-      renderCards(META_LIST.filter(m=>m.year === y));
+      renderCards(META_LIST.filter(m => m.year === y));
       SIDEBAR.classList.remove('open');
     };
     li.appendChild(a);
@@ -121,21 +163,21 @@ function buildYearList(years) {
   YEAR_LIST.appendChild(ul);
 }
 
-/* 햄버거 토글 */
+/* 햄버거 메뉴 토글 */
 MENU_BTN.onclick = () => SIDEBAR.classList.toggle('open');
 
 /**
  * 7) 초기화
  */
 (async function init(){
-  console.log('▶️ init 시작');
   const items = await fetchImageList();
   META_LIST = items
     .map(parseMeta)
-    .sort((a,b)=>b.date.localeCompare(a.date));
-  console.log('▶️ META_LIST:', META_LIST);
+    .sort((a,b) => b.date.localeCompare(a.date));  // 최신→과거
 
-  const years = [...new Set(META_LIST.map(m=>m.year).filter(Boolean))].sort((a,b)=>b-a);
+  const years = [...new Set(META_LIST.map(m => m.year).filter(Boolean))]
+    .sort((a,b) => b - a);
+
   buildYearList(years);
   renderCards(META_LIST);
 })();
