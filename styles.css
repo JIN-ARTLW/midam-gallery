@@ -85,27 +85,31 @@ a {
   line-height: 1.7;
 }
 
-/* 4. 메인 갤러리 (CSS 멀티컬럼 Masonry) */
+/* 기존 멀티컬럼 Masonry 제거 */
 #gallery {
-  flex: 1;
-  column-width: 300px; /* 최소 카드 너비 */
-  column-gap: 12px;
   padding: 24px;
-  overflow-y: auto;
+
+  /* 멀티컬럼 대신 그리드 */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: 16px;
 }
+
+/* 카드에서 멀티컬럼 관련 속성 모두 제거 */
 .card {
-  display: inline-block;
-  margin-bottom: 12px;
-  break-inside: avoid;
+  margin: 0 0 16px;
   border: 1px solid #e0e0e0;
   background: #fff;
   cursor: pointer;
 }
+
+/* 이미지는 칸 너비에 맞춰 늘리기 */
 .card img {
   width: 100%;
   height: auto;
   display: block;
 }
+
 
 /* 5. 오버레이 */
 #overlay {
