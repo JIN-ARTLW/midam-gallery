@@ -1,27 +1,30 @@
-# .github/workflows/thumbnailer.yml
 name: Generate Thumbnails
+
+# ① GITHUB_TOKEN으로 repo에 쓰기 권한 부여
+permissions:
+  contents: write
 
 on:
   push:
     paths:
-      - 'images/*.{jpg,jpeg,png}'   # 원본 이미지가 바뀔 때마다
-  workflow_dispatch:               # 수동 실행 옵션
+      - 'images/*.{jpg,jpeg,png}'
+  workflow_dispatch:
 
 jobs:
   thumb:
     runs-on: ubuntu-latest
+
     steps:
-      # 1) 소스 체크아웃
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: true     # ② 토큰 유지
 
-      # 2) Node.js 세팅 (Sharp 사용)
       - uses: actions/setup-node@v3
-        with: { node-version: '18' }
+        with:
+          node-version: '18'
 
-      # 3) sharp 설치
       - run: npm install sharp
 
-      # 4) 썸네일 생성 스크립트 실행
       - name: Resize to thumbnails
         run: |
           node <<'EOF'
@@ -34,15 +37,12 @@ jobs:
             const OUT = path.join(SRC, 'thumbs');
             if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
 
-            const files = fs.readdirSync(SRC)
-              .filter(f => /\.(jpe?g|png)$/i.test(f));
+            const files = fs.readdirSync(SRC).filter(f=>/\.(jpe?g|png)$/i.test(f));
             for (const f of files) {
               const inp = path.join(SRC, f);
               const out = path.join(OUT, f);
               if (fs.existsSync(out)) continue;
-              await sharp(inp)
-                .resize({ width: 200 })
-                .toFile(out);
+              await sharp(inp).resize({ width: 200 }).toFile(out);
               console.log(`🔧 thumb: ${f}`);
             }
           })().catch(err => {
@@ -51,14 +51,12 @@ jobs:
           });
           EOF
 
-
-      # 5) 커밋 & 푸시
       - name: Commit thumbs
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add images/thumbs
-          git commit -m "chore: update thumbnails" || echo "No thumbnail changes"
+          git commit -m "chore: update thumbnails" || echo "No changes"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
