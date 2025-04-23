@@ -25,26 +25,32 @@ jobs:
       - name: Resize to thumbnails
         run: |
           node <<'EOF'
-          import fs from 'fs';
-          import path from 'path';
-          import sharp from 'sharp';
+          const fs    = require('fs');
+          const path  = require('path');
+          const sharp = require('sharp');
 
-          const SRC = 'images';
-          const OUT = path.join(SRC, 'thumbs');
-          if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
+          (async () => {
+            const SRC = 'images';
+            const OUT = path.join(SRC, 'thumbs');
+            if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
 
-          const files = fs.readdirSync(SRC).filter(f=>/\.(jpe?g|png)$/i.test(f));
-          for (const f of files) {
-            const inP  = path.join(SRC, f);
-            const outP = path.join(OUT, f);
-            // 이미 있으면 건너뛰기
-            if (fs.existsSync(outP)) continue;
-            await sharp(inP)
-              .resize({ width: 200 })
-              .toFile(outP);
-            console.log(`🔧 thumb: ${f}`);
-          }
+            const files = fs.readdirSync(SRC)
+              .filter(f => /\.(jpe?g|png)$/i.test(f));
+            for (const f of files) {
+              const inp = path.join(SRC, f);
+              const out = path.join(OUT, f);
+              if (fs.existsSync(out)) continue;
+              await sharp(inp)
+                .resize({ width: 200 })
+                .toFile(out);
+              console.log(`🔧 thumb: ${f}`);
+            }
+          })().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
           EOF
+
 
       # 5) 커밋 & 푸시
       - name: Commit thumbs
