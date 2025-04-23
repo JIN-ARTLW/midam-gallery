@@ -1,0 +1,58 @@
+# .github/workflows/thumbnailer.yml
+name: Generate Thumbnails
+
+on:
+  push:
+    paths:
+      - 'images/*.{jpg,jpeg,png}'   # 원본 이미지가 바뀔 때마다
+  workflow_dispatch:               # 수동 실행 옵션
+
+jobs:
+  thumb:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) 소스 체크아웃
+      - uses: actions/checkout@v3
+
+      # 2) Node.js 세팅 (Sharp 사용)
+      - uses: actions/setup-node@v3
+        with: { node-version: '18' }
+
+      # 3) sharp 설치
+      - run: npm install sharp
+
+      # 4) 썸네일 생성 스크립트 실행
+      - name: Resize to thumbnails
+        run: |
+          node <<'EOF'
+          import fs from 'fs';
+          import path from 'path';
+          import sharp from 'sharp';
+
+          const SRC = 'images';
+          const OUT = path.join(SRC, 'thumbs');
+          if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
+
+          const files = fs.readdirSync(SRC).filter(f=>/\.(jpe?g|png)$/i.test(f));
+          for (const f of files) {
+            const inP  = path.join(SRC, f);
+            const outP = path.join(OUT, f);
+            // 이미 있으면 건너뛰기
+            if (fs.existsSync(outP)) continue;
+            await sharp(inP)
+              .resize({ width: 200 })
+              .toFile(outP);
+            console.log(`🔧 thumb: ${f}`);
+          }
+          EOF
+
+      # 5) 커밋 & 푸시
+      - name: Commit thumbs
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add images/thumbs
+          git commit -m "chore: update thumbnails" || echo "No thumbnail changes"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
