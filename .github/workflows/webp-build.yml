@@ -1,46 +1,73 @@
 name: Generate WebP thumbnails
 
+# ────────────────────────────────
+# 언제 실행하나?
+# ────────────────────────────────
 on:
-  workflow_dispatch:          # ★ 버튼 실행용 트리거
+  # 1) Actions 탭 → Run workflow 버튼
+  workflow_dispatch:
     inputs:
       quality:
-        description: "WebP quality (0-100, default 80)"
+        description: "WebP quality (0–100, default 80)"
         required: false
         default: "80"
 
+  # 2) 이미지가 포함된 커밋이 push 되면
   push:
-    paths: [ "images/**.png", "images/**.jpg", "images/**.jpeg" ]
-  pull_request:
-    paths: [ "images/**.png", "images/**.jpg", "images/**.jpeg" ]
+    paths:
+      - "images/**.png"
+      - "images/**.jpg"
+      - "images/**.jpeg"
 
+  # 3) PR 에 이미지가 추가되면
+  pull_request:
+    paths:
+      - "images/**.png"
+      - "images/**.jpg"
+      - "images/**.jpeg"
+
+# ────────────────────────────────
+# 작업 정의
+# ────────────────────────────────
 jobs:
   webp:
     runs-on: ubuntu-latest
+
     steps:
+      # 1) 저장소 체크아웃
       - uses: actions/checkout@v4
 
+      # 2) WebP CLI 설치
       - name: Install cwebp
         run: sudo apt-get update && sudo apt-get install -y webp
 
-      - name: Convert images
+      # 3) 이미지 변환
+      - name: Convert images to WebP
         shell: bash
         run: |
+          set -e
           mkdir -p images/webp
           Q=${{ github.event.inputs.quality || '80' }}
-          echo "Quality: $Q"
+          echo "🔧 Quality = $Q"
 
-          # 새로 추가·변경된 파일 목록 없으면 전체 변환
-          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- "images/*.png" "images/*.jpg" "images/*.jpeg")
-          [[ -z "$FILES" ]] && FILES=$(ls images/*.{png,jpg,jpeg} 2>/dev/null || true)
+          # 변경된 이미지 목록(널 구분). 없을 땐 전체 대상.
+          FILES=$(git diff -z --name-only ${{ github.event.before }} ${{ github.sha }} -- \
+                  "images/*.png" "images/*.jpg" "images/*.jpeg")
+          if [[ -z "$FILES" ]]; then
+            FILES=$(find images -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+          fi
 
-          for f in $FILES; do
+          # 널(\0) 단위로 안전 루프
+          while IFS= read -r -d '' f; do
+            [[ -z "$f" ]] && continue
             base=$(basename "$f")
             out="images/webp/${base%.*}.webp"
             echo "▶︎ $f → $out"
-            cwebp -q $Q "$f" -o "$out"
-          done
+            cwebp -q "$Q" "$f" -o "$out"
+          done < <(printf '%s' "$FILES")
 
+      # 4) 결과 커밋 & 푸시
       - name: Commit WebP files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(images): generate WebP via manual run"
+          commit_message: "chore(images): auto-generate WebP"
