@@ -85,30 +85,30 @@ a {
   line-height: 1.7;
 }
 
-/* 기존 멀티컬럼 Masonry 제거 */
+/* --- 메인 갤러리 (CSS Masonry) --- */
 #gallery {
+  flex: 1;
+  column-width: 600px;   /* 썸네일 600px */
+  column-gap: 16px;      /* 컬럼 간격 */
   padding: 24px;
-
-  /* 멀티컬럼 대신 그리드 */
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  grid-gap: 16px;
+  overflow-y: auto;
 }
 
-/* 카드에서 멀티컬럼 관련 속성 모두 제거 */
 .card {
-  margin: 0 0 16px;
+  display: inline-block; /* 멀티컬럼 카드 */
+  margin-bottom: 16px;
+  break-inside: avoid;   /* 컬럼 깨짐 방지 */
   border: 1px solid #e0e0e0;
   background: #fff;
   cursor: pointer;
 }
 
-/* 이미지는 칸 너비에 맞춰 늘리기 */
 .card img {
-  width: 100%;
+  width: 100%;           /* 컬럼 폭에 딱 맞춤 */
   height: auto;
   display: block;
 }
+
 
 
 /* 5. 오버레이 */
