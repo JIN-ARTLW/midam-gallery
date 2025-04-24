@@ -79,6 +79,8 @@ function lazyLoadImages() {
 
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries, obs) => {
+      rootMargin: '200px 0px',
+      threshold: 0.01
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const img = entry.target;
