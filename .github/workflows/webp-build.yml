@@ -78,3 +78,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(images): auto-generate WebP"
+          push_options: '--force'        # (보호 브랜치가 아닐 때만)
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_WRITE }}   # repo/write 권한 PAT
