@@ -1,3 +1,4 @@
+<!-- ========== index.html (배너 제거 버전) ========== -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,20 +9,22 @@
 </head>
 <body>
   <button id="menu-btn" aria-label="Menu">
-    <img src="Icon/daisy-full.png" alt="Menu" />
+    <img src="icon/daisy-full.png" alt="Menu" />
   </button>
   <aside id="sidebar">
     <section id="year-list"></section>
     <hr />
     <section id="artist-info">
+      <br>
       <p>미소를 담다, 미담</p>
-      <p>contact : <a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
+      <br>
+      <p>contact : <a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
     </section>
   </aside>
 
   <main id="gallery"></main>
 
-  <!-- 이미지 확대 오버레이 -->
+  <!-- 확대 오버레이 -->
   <div id="overlay" class="hidden">
     <div id="overlay-content">
       <img id="overlay-img" alt="" />
@@ -32,6 +35,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
