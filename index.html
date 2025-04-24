@@ -1,4 +1,3 @@
-<!-- ========== index.html (배너 제거 버전) ========== -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,20 +7,22 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- 햄버거 메뉴 버튼 -->
   <button id="menu-btn" aria-label="Menu">
     <img src="Icon/daisy-full.png" alt="Menu" />
   </button>
+
+  <!-- 사이드바 -->
   <aside id="sidebar">
     <section id="year-list"></section>
     <hr />
     <section id="artist-info">
-      <br>
       <p>미소를 담다, 미담</p>
-      <br>
-      <p>contact : <a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
+      <p>contact : <a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
     </section>
   </aside>
 
+  <!-- 갤러리 -->
   <main id="gallery"></main>
 
   <!-- 확대 오버레이 -->
@@ -31,16 +32,11 @@
       <div id="overlay-meta">
         <h3></h3><p></p><time></time>
       </div>
-      <button id="close-btn" aria-label="close">×</button>
+      <button id="close-btn" aria-label="Close">×</button>
     </div>
   </div>
-  
-  <!-- Masonry -->
-  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-  <!-- imagesLoaded: Masonry와 함께 이미지 로딩 체크 -->
-  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+
   <!-- 내 스크립트 -->
   <script src="script.js"></script>
-  
 </body>
 </html>
