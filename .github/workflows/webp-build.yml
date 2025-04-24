@@ -49,22 +49,29 @@ jobs:
           mkdir -p images/webp
           Q=${{ github.event.inputs.quality || '80' }}
           echo "🔧 Quality = $Q"
-
-          # 변경된 이미지 목록(널 구분). 없을 땐 전체 대상.
-          FILES=$(git diff -z --name-only ${{ github.event.before }} ${{ github.sha }} -- \
-                  "images/*.png" "images/*.jpg" "images/*.jpeg")
-          if [[ -z "$FILES" ]]; then
-            FILES=$(find images -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+      
+          convert() {
+            while IFS= read -r -d '' f; do
+              [[ -z "$f" ]] && continue
+              base=$(basename "$f")
+              out="images/webp/${base%.*}.webp"
+              echo "▶︎ $f → $out"
+              cwebp -quiet -q "$Q" "$f" -o "$out"
+            done
+          }
+      
+          # 1) 변경된 이미지 (있으면 이것만)
+          if git diff --name-only -z ${{ github.event.before }} ${{ github.sha }} -- \
+               "images/*.png" "images/*.jpg" "images/*.jpeg" | grep -q .; then
+            git diff --name-only -z ${{ github.event.before }} ${{ github.sha }} -- \
+              "images/*.png" "images/*.jpg" "images/*.jpeg" \
+              | convert
+          else
+            # 2) 없으면 images/ 전체 스캔
+            find images -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0 \
+              | convert
           fi
 
-          # 널(\0) 단위로 안전 루프
-          while IFS= read -r -d '' f; do
-            [[ -z "$f" ]] && continue
-            base=$(basename "$f")
-            out="images/webp/${base%.*}.webp"
-            echo "▶︎ $f → $out"
-            cwebp -q "$Q" "$f" -o "$out"
-          done < <(printf '%s' "$FILES")
 
       # 4) 결과 커밋 & 푸시
       - name: Commit WebP files
