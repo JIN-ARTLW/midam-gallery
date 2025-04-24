@@ -1,80 +1,83 @@
-/* ========== script.js ========== */
+/* ========== script.js (롤백 버전) ========== */
 
-/* — DOM 캐시 — */
+const IMAGE_DIR = 'images/';
+
+/* DOM */
 const GALLERY   = document.getElementById('gallery');
 const YEAR_LIST = document.getElementById('year-list');
-const SIDEBAR   = document.getElementById('sidebar');
-const MENU_BTN  = document.getElementById('menu-btn');
 const OVERLAY   = document.getElementById('overlay');
 const O_IMG     = document.getElementById('overlay-img');
 const O_META    = document.getElementById('overlay-meta');
 const CLOSE_BTN = document.getElementById('close-btn');
+const MENU_BTN  = document.getElementById('menu-btn');
+const SIDEBAR   = document.getElementById('sidebar');
 
 let META_LIST = [];
 
-/** 1) images/images.json 불러오기 */
+/* 1) 폴더 리스팅 (images/) */
 async function fetchImageList() {
-  const res = await fetch('images/images.json');
-  if (!res.ok) {
-    console.error('images.json 로드 실패:', res.status);
-    return [];
-  }
-  const files = await res.json(); // ["title_desc_2024-06-10.png", ...]
-  return files.map(name => ({ filename: name, src: `images/${name}` }));
+  const res  = await fetch(IMAGE_DIR);
+  const html = await res.text();
+  const reg  = /href="([^"?]*\.(?:jpg|jpeg|png))"/gi;
+  return [...html.matchAll(reg)].map(m=>m[1]);
 }
 
-/** 2) 파일명 → 메타데이터 */
-function parseMeta({ filename, src }) {
-  const [base] = filename.split(/\.(?=[^.]+$)/);
-  const parts  = base.split('_');
-  let [title='', desc='', date=''] = parts;
-  if (parts.length === 2) [title, date] = parts;
+/* 2) 파일명 → 메타 */
+function parseMeta(file) {
+  const decoded = decodeURIComponent(file);
+  const [name]  = decoded.split(/\.(?=[^.]+$)/);
+  const dateReg = /(\d{4})-(\d{2})-(\d{2})$/;
+  const m = name.match(dateReg);
+
+  let title = name, desc = '', date = '', year = '', epoch = 0;
+  if (m) {
+    const [_,y,mo,d] = m;
+    date = `${y}-${mo}-${d}`;
+    year = y;
+    epoch = new Date(+y, +mo-1, +d).getTime();
+    title = name.slice(0, name.length - m[0].length - 1);
+  }
   return {
-    title: title.replace(/-/g, ' ').trim() || 'Untitled',
-    desc,
+    title: title.replace(/[_-]+/g,' ').trim() || 'Untitled',
+    desc: '',
     date,
-    year: date.slice(0,4),
-    filename,
-    src
+    year,
+    epoch,
+    src: IMAGE_DIR + file
   };
 }
 
-/** 3) 카드 생성 */
-function createCard(meta) {
-  const div = document.createElement('div');
-  div.className    = 'card';
-  div.dataset.year = meta.year;
-
+/* 3) 카드 생성 */
+function createCard(m) {
+  const d = document.createElement('div');
+  d.className    = 'card';
+  d.dataset.year = m.year;
   const img = document.createElement('img');
-  img.src     = `images/thumbs/${meta.filename}`; // 썸네일 경로
-  img.alt     = meta.title;
-  img.loading = 'lazy';
-  div.appendChild(img);
-
-  div.addEventListener('click', () => openOverlay(meta));
-  return div;
+  img.src = m.src;
+  img.alt = m.title;
+  d.appendChild(img);
+  d.onclick = ()=>openOverlay(m);
+  return d;
 }
 
-/** 4) 오버레이 열기/닫기 */
-function openOverlay(meta) {
-  O_IMG.src = meta.src;
-  O_META.querySelector('h3').textContent   = meta.title;
-  O_META.querySelector('p').textContent    = meta.desc;
-  O_META.querySelector('time').textContent = meta.date;
+/* 4) 오버레이 */
+function openOverlay(m) {
+  O_IMG.src = m.src;
+  O_META.querySelector('h3').textContent   = m.title;
+  O_META.querySelector('p').textContent    = m.desc;
+  O_META.querySelector('time').textContent = m.date;
   OVERLAY.classList.remove('hidden');
 }
-CLOSE_BTN.addEventListener('click', () => OVERLAY.classList.add('hidden'));
-OVERLAY.addEventListener('click', e => {
-  if (e.target === OVERLAY) OVERLAY.classList.add('hidden');
-});
+CLOSE_BTN.onclick = ()=>OVERLAY.classList.add('hidden');
+OVERLAY.onclick   = e=>{ if (e.target===OVERLAY) OVERLAY.classList.add('hidden'); };
 
-/** 5) 갤러리 렌더 + 필터 */
+/* 5) 렌더 */
 function renderCards(list) {
   GALLERY.innerHTML = '';
-  list.forEach(m => GALLERY.appendChild(createCard(m)));
+  list.forEach(m=>GALLERY.appendChild(createCard(m)));
 }
 
-/** 6) 연도별 사이드바 빌드 */
+/* 6) 연도 사이드바 */
 function buildYearList(years) {
   YEAR_LIST.innerHTML = '';
   const ul = document.createElement('ul');
@@ -82,47 +85,32 @@ function buildYearList(years) {
   // 전체
   let li = document.createElement('li');
   let a  = document.createElement('a');
-  a.href = '#'; a.textContent = '전체';
-  a.onclick = e => {
-    e.preventDefault();
-    renderCards(META_LIST);
-    if (window.innerWidth <= 700) SIDEBAR.classList.add('closed');
-  };
-  li.appendChild(a);
-  ul.appendChild(li);
+  a.textContent = '전체'; a.href = '#';
+  a.onclick = e=>{ e.preventDefault(); renderCards(META_LIST); SIDEBAR.classList.remove('open'); };
+  li.appendChild(a); ul.appendChild(li);
 
-  // 연도별
-  years.forEach(y => {
+  years.forEach(y=>{
     li = document.createElement('li');
     a  = document.createElement('a');
-    a.href = '#'; a.textContent = y;
-    a.onclick = e => {
-      e.preventDefault();
-      renderCards(META_LIST.filter(m => m.year === y));
-      if (window.innerWidth <= 700) SIDEBAR.classList.add('closed');
-    };
-    li.appendChild(a);
-    ul.appendChild(li);
+    a.textContent = y; a.href = '#';
+    a.onclick = e=>{ e.preventDefault(); renderCards(META_LIST.filter(m=>m.year===y)); SIDEBAR.classList.remove('open'); };
+    li.appendChild(a); ul.appendChild(li);
   });
 
   YEAR_LIST.appendChild(ul);
 }
 
-/** 햄버거 메뉴 토글 */
-MENU_BTN.addEventListener('click', () => {
-  SIDEBAR.classList.toggle('closed');
-});
+/* 햄버거 토글 */
+MENU_BTN.onclick = ()=>SIDEBAR.classList.toggle('open');
 
-/** 7) 초기화 */
-(async function init() {
+/* init */
+(async function init(){
   const files = await fetchImageList();
   META_LIST = files.map(parseMeta)
-                   .sort((a,b) => b.date.localeCompare(a.date));
+                   .sort((a,b)=>b.epoch - a.epoch);
 
-  const years = [...new Set(META_LIST.map(m => m.year))]
-                  .filter(Boolean)
-                  .sort((a,b) => b - a);
-
+  const years = [...new Set(META_LIST.map(m=>m.year).filter(Boolean))]
+                   .sort((a,b)=>b-a);
   buildYearList(years);
   renderCards(META_LIST);
 })();
