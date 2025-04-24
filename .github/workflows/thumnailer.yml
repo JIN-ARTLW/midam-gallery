@@ -42,7 +42,7 @@ jobs:
               const inp = path.join(SRC, f);
               const out = path.join(OUT, f);
               if (fs.existsSync(out)) continue;
-              await sharp(inp).resize({ width: 200 }).toFile(out);
+              await sharp(inp).resize({ width: 600 }).toFile(out);
               console.log(`🔧 thumb: ${f}`);
             }
           })().catch(err => {
