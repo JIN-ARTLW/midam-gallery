@@ -64,6 +64,11 @@ a {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
   color: #000;
+
+  /* ▶▶ 추가: 데스크톱에서 항상 보이도록 고정 */
+  position: sticky;   /* 부모 영역 기준으로 ‘달라붙음’ */
+  top: 0;             /* 윗부분에 붙이기 */
+  height: 100vh;      /* 뷰포트 전체 높이 */
 }
 #year-list ul {
   list-style: none;
@@ -89,13 +94,13 @@ a {
 #gallery {
   flex: 1;
   column-width: 300px; /* 최소 카드 너비 */
-  column-gap: 12px;
-  padding: 24px;
+  column-gap: 5px;
+  padding: 20px;
   overflow-y: auto;
 }
 .card {
   display: inline-block;
-  margin-bottom: 12px;
+  margin-bottom: 1px;
   break-inside: avoid;
   border: 1px solid #e0e0e0;
   background: #fff;
@@ -173,7 +178,6 @@ a {
   color: #fff;
   cursor: pointer;
 }
-
 /* 6. 모바일 전용 @media ------------------------------------------------ */
 @media (max-width: 700px) {
   /* 햄버거 버튼 보이기 */
@@ -199,8 +203,9 @@ a {
   /* 갤러리: 멀티컬럼 Masonry 유지 */
   #gallery {
     display: block;
-    column-width: 150px; /* 모바일 최소 카드 폭 */
-    column-gap: 8px;
+    column-count: 2;
+    column-width: 100px; /* 모바일 최소 카드 폭 */
+    column-gap: 5px;
     padding: 20px 16px;
   }
 
