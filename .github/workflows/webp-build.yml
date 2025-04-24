@@ -1,0 +1,47 @@
+name: Generate WebP thumbnails
+
+on:
+  push:
+    paths:
+      - "images/**.png"
+      - "images/**.jpg"
+      - "images/**.jpeg"
+  pull_request:
+    paths:
+      - "images/**.png"
+      - "images/**.jpg"
+      - "images/**.jpeg"
+
+jobs:
+  webp:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) 저장소 체크아웃
+      - uses: actions/checkout@v4
+
+      # 2) WebP CLI 설치 (libwebp 패키지)
+      - name: Install cwebp
+        run: sudo apt-get update && sudo apt-get install -y webp
+
+      # 3) 변환 스크립트 실행
+      - name: Convert new/changed images to WebP
+        shell: bash
+        run: |
+          mkdir -p images/webp
+          # git diff 로 변경된 이미지 목록만 추출
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- \
+                    "images/*.png" "images/*.jpg" "images/*.jpeg")
+          for FILE in $CHANGED; do
+            BASE=$(basename "$FILE")
+            OUT="images/webp/${BASE%.*}.webp"
+            echo "▶︎ $FILE → $OUT"
+            cwebp -q 80 "$FILE" -o "$OUT"
+          done
+
+      # 4) 결과 커밋 & 푸시 (변환 파일이 있을 때만)
+      - name: Commit WebP files
+        if: ${{ steps.webp.outputs.changed != '' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(images): auto-generate WebP thumbnails"
