@@ -215,3 +215,9 @@ a {
     overflow-wrap: anywhere;
   }
 }
+
+.card img {
+  /* placeholder라도 ‘그림 자리’를 확보 */
+  width: 100%;
+  min-height: 150px;   /* 취향껏: 120~200px 정도 */
+}
