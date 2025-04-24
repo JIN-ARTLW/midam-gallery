@@ -73,7 +73,7 @@ a {
 
 /* 컬럼 레이아웃 */
 #gallery {
-  column-count: 4;
+  column-count: 3;
   column-gap: 16px;
 }
 #gallery .card {
@@ -94,7 +94,7 @@ a {
 /* 반응형 컬럼 수 */
 @media (max-width: 1199px) { #gallery { column-count: 3; } }
 @media (max-width: 991px)  { #gallery { column-count: 2; } }
-@media (max-width: 767px)  { #gallery { column-count: 1; } }
+@media (max-width: 767px)  { #gallery { column-count: 2; } }
 
 /* ========== 오버레이 ========== */
 #overlay {
