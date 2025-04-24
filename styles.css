@@ -85,29 +85,26 @@ a {
   line-height: 1.7;
 }
 
-/* --- 메인 갤러리 (CSS Masonry) --- */
 #gallery {
   flex: 1;
-  column-width: 600px;   /* 썸네일 600px */
-  column-gap: 16px;      /* 컬럼 간격 */
   padding: 24px;
-  overflow-y: auto;
+  /* column-*, display: grid 등 모두 제거 */
 }
 
 .card {
-  display: inline-block; /* 멀티컬럼 카드 */
+  display: inline-block;
+  vertical-align: top;
   margin-bottom: 16px;
-  break-inside: avoid;   /* 컬럼 깨짐 방지 */
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  cursor: pointer;
+  /* 가로간격은 JS에서 gutter로 처리 */
+  width: 600px;           /* 썸네일 너비 */
 }
 
 .card img {
-  width: 100%;           /* 컬럼 폭에 딱 맞춤 */
+  width: 100%;
   height: auto;
   display: block;
 }
+
 
 
 
