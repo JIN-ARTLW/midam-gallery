@@ -77,7 +77,7 @@ function renderCards(arr) {
   // columnWidth: 600, gutter:16 정도가 무난합니다.
   new Masonry(GALLERY, {
     itemSelector: '.card',
-    columnWidth: 600,
+    columnWidth: 300,
     gutter: 16,
     fitWidth: false      // 컨테이너 폭에 맞춰 자동으로 칸수를 늘립니다
   });
