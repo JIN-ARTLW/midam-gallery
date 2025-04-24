@@ -66,10 +66,21 @@ function openOverlay(meta) {
 CLOSE_BTN.onclick = () => OVERLAY.classList.add('hidden');
 OVERLAY.onclick   = e => { if (e.target===OVERLAY) OVERLAY.classList.add('hidden'); };
 
-/** 5) 렌더 */
+
+// 5) 갤러리 렌더링
 function renderCards(arr) {
   GALLERY.innerHTML = '';
   arr.forEach(m => GALLERY.appendChild(createCard(m)));
+
+  // ★ Masonry 초기화 / 재배치 ★
+  // images/thumbs 폴더에서 600px짜리 썸네일을 불러오도록 width:600으로 설정했다면,
+  // columnWidth: 600, gutter:16 정도가 무난합니다.
+  new Masonry(GALLERY, {
+    itemSelector: '.card',
+    columnWidth: 600,
+    gutter: 16,
+    fitWidth: false      // 컨테이너 폭에 맞춰 자동으로 칸수를 늘립니다
+  });
 }
 
 /** 6) 사이드바 빌드 */
