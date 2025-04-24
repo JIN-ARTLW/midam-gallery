@@ -99,17 +99,19 @@ a {
   overflow-y: auto;
 }
 .card {
-  display: inline-block;
+  display: block;      /* inline-block → block  */
+  width: 100%;         /* 컬럼 너비 전부 사용     */
   margin-bottom: 1px;
   break-inside: avoid;
   border: 1px solid #e0e0e0;
   background: #fff;
   cursor: pointer;
 }
+
 .card img {
   width: 100%;
   height: auto;
-  display: block;
+  min-height: 150px;   /* 앞서 넣었던 줄 그대로 유지 */
 }
 
 /* 5. 오버레이 */
