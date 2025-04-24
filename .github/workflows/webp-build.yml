@@ -1,47 +1,46 @@
 name: Generate WebP thumbnails
 
 on:
+  workflow_dispatch:          # ★ 버튼 실행용 트리거
+    inputs:
+      quality:
+        description: "WebP quality (0-100, default 80)"
+        required: false
+        default: "80"
+
   push:
-    paths:
-      - "images/**.png"
-      - "images/**.jpg"
-      - "images/**.jpeg"
+    paths: [ "images/**.png", "images/**.jpg", "images/**.jpeg" ]
   pull_request:
-    paths:
-      - "images/**.png"
-      - "images/**.jpg"
-      - "images/**.jpeg"
+    paths: [ "images/**.png", "images/**.jpg", "images/**.jpeg" ]
 
 jobs:
   webp:
     runs-on: ubuntu-latest
-
     steps:
-      # 1) 저장소 체크아웃
       - uses: actions/checkout@v4
 
-      # 2) WebP CLI 설치 (libwebp 패키지)
       - name: Install cwebp
         run: sudo apt-get update && sudo apt-get install -y webp
 
-      # 3) 변환 스크립트 실행
-      - name: Convert new/changed images to WebP
+      - name: Convert images
         shell: bash
         run: |
           mkdir -p images/webp
-          # git diff 로 변경된 이미지 목록만 추출
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- \
-                    "images/*.png" "images/*.jpg" "images/*.jpeg")
-          for FILE in $CHANGED; do
-            BASE=$(basename "$FILE")
-            OUT="images/webp/${BASE%.*}.webp"
-            echo "▶︎ $FILE → $OUT"
-            cwebp -q 80 "$FILE" -o "$OUT"
+          Q=${{ github.event.inputs.quality || '80' }}
+          echo "Quality: $Q"
+
+          # 새로 추가·변경된 파일 목록 없으면 전체 변환
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- "images/*.png" "images/*.jpg" "images/*.jpeg")
+          [[ -z "$FILES" ]] && FILES=$(ls images/*.{png,jpg,jpeg} 2>/dev/null || true)
+
+          for f in $FILES; do
+            base=$(basename "$f")
+            out="images/webp/${base%.*}.webp"
+            echo "▶︎ $f → $out"
+            cwebp -q $Q "$f" -o "$out"
           done
 
-      # 4) 결과 커밋 & 푸시 (변환 파일이 있을 때만)
       - name: Commit WebP files
-        if: ${{ steps.webp.outputs.changed != '' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(images): auto-generate WebP thumbnails"
+          commit_message: "chore(images): generate WebP via manual run"
