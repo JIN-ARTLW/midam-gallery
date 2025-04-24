@@ -7,12 +7,9 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- 햄버거 메뉴 버튼 -->
   <button id="menu-btn" aria-label="Menu">
     <img src="Icon/daisy-full.png" alt="Menu" />
   </button>
-
-  <!-- 사이드바 -->
   <aside id="sidebar">
     <section id="year-list"></section>
     <hr />
@@ -22,21 +19,19 @@
     </section>
   </aside>
 
-  <!-- 갤러리 -->
   <main id="gallery"></main>
 
-  <!-- 확대 오버레이 -->
+  <!-- 이미지 확대 오버레이 -->
   <div id="overlay" class="hidden">
     <div id="overlay-content">
       <img id="overlay-img" alt="" />
       <div id="overlay-meta">
         <h3></h3><p></p><time></time>
       </div>
-      <button id="close-btn" aria-label="Close">×</button>
+      <button id="close-btn" aria-label="close">×</button>
     </div>
   </div>
 
-  <!-- 내 스크립트 -->
   <script src="script.js"></script>
 </body>
 </html>
