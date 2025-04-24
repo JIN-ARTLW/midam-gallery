@@ -88,15 +88,14 @@ a {
 #gallery {
   flex: 1;
   padding: 24px;
-  /* column-*, display: grid 등 모두 제거 */
+  /* display: grid; 또는 column-* 모두 제거 */
 }
 
 .card {
   display: inline-block;
   vertical-align: top;
-  margin-bottom: 16px;
-  /* 가로간격은 JS에서 gutter로 처리 */
-  width: 600px;           /* 썸네일 너비 */
+  width: 600px;       /* 썸네일 폭 */
+  margin: 0 16px 16px 0;
 }
 
 .card img {
@@ -104,9 +103,6 @@ a {
   height: auto;
   display: block;
 }
-
-
-
 
 /* 5. 오버레이 */
 #overlay {
