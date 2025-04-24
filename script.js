@@ -67,17 +67,19 @@ OVERLAY.addEventListener('click', e => {
   if (e.target === OVERLAY) OVERLAY.classList.add('hidden');
 });
 
-/** 5) 갤러리 렌더 + Masonry 초기화 */
+// 5) 갤러리 렌더 + Masonry 초기화
 function renderCards(arr) {
   GALLERY.innerHTML = '';
   arr.forEach(m => GALLERY.appendChild(createCard(m)));
 
-  // Masonry: 빈틈 없이 벽돌쌓기 레이아웃
-  new Masonry(GALLERY, {
-    itemSelector: '.card',
-    columnWidth:  600,  // thumbs 폭(600px)에 맞춥니다
-    gutter:       16,   // 카드 사이 간격
-    fitWidth:     false
+  // ★ 이미지가 모두 로드된 뒤에 Masonry 실행 ★
+  imagesLoaded(GALLERY, function() {
+    new Masonry(GALLERY, {
+      itemSelector: '.card',
+      columnWidth:  600,
+      gutter:       16,
+      fitWidth:     false
+    });
   });
 }
 
