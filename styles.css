@@ -111,7 +111,7 @@ a {
 .card img {
   width: 100%;
   height: auto;
-  min-height: 150px;   /* 앞서 넣었던 줄 그대로 유지 */
+  /* min-height: 150px;   /* 앞서 넣었던 줄 그대로 유지 */
 }
 
 /* 5. 오버레이 */
