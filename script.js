@@ -55,35 +55,36 @@ function parseMeta({ filename, src, webp }) {
 }
 
 /* 3) 카드 생성 (커스텀 Lazy-Load 적용) */
-// webp added
+// ❶ placeholder: 실제 이미지와 비슷한 종횡비로
+function makePlaceholder(w = 3, h = 4) {
+  return `data:image/svg+xml;charset=utf-8,` +
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'/>`;
+}
+
 function createCard(meta) {
   const div = document.createElement('div');
-  div.className    = 'card';
+  div.className = 'card';
   div.dataset.year = meta.year;
 
   const img = document.createElement('img');
-  img.src         = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>';
+
+  /* ❷ 종횡비 3:4 정도의 투명 SVG → Masonry가 대략 높이를 잡도록 */
+  img.src = makePlaceholder(3, 4);
+
   img.dataset.src = SUPPORTS_WEBP ? meta.webp : meta.src;
-  img.alt         = meta.title;
+  img.alt = meta.title;
 
-  /* ▶ placeholder 동안만 높이 확보 */
-  img.style.minHeight = '150px';
-
-  /* 이미지가 완전히 로드되면 min-height 제거 */
-  img.onload = () => {
-    img.style.minHeight = '';
-  };
-
-  /* WebP 404 등 에러 시 원본으로 폴백 */
+  /* ❸ 더 이상 min-height 설정 X */
+  img.onload = null;
   img.onerror = function () {
     if (this.src !== meta.src) this.src = meta.src;
-    else img.style.minHeight = '';   // 폴백 후에도 해제
   };
 
   div.appendChild(img);
   div.onclick = () => openOverlay(meta);
   return div;
 }
+
 
 
 /* — 화면에 보이는 순간 이미지를 로드해 주는 함수 — */
