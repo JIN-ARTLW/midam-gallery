@@ -62,10 +62,23 @@ function createCard(meta) {
   div.dataset.year = meta.year;
 
   const img = document.createElement('img');
-  /* placeholder */
-  img.src         = 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>';
-  img.dataset.src = SUPPORTS_WEBP ? meta.webp : meta.src;   // WebP 우선
+  img.src         = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>';
+  img.dataset.src = SUPPORTS_WEBP ? meta.webp : meta.src;
   img.alt         = meta.title;
+
+  /* ▶ placeholder 동안만 높이 확보 */
+  img.style.minHeight = '150px';
+
+  /* 이미지가 완전히 로드되면 min-height 제거 */
+  img.onload = () => {
+    img.style.minHeight = '';
+  };
+
+  /* WebP 404 등 에러 시 원본으로 폴백 */
+  img.onerror = function () {
+    if (this.src !== meta.src) this.src = meta.src;
+    else img.style.minHeight = '';   // 폴백 후에도 해제
+  };
 
   div.appendChild(img);
   div.onclick = () => openOverlay(meta);
