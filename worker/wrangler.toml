@@ -1,0 +1,13 @@
+name = "midam-upload"
+main = "upload-worker.js"
+compatibility_date = "2024-11-01"
+
+# 갤러리 저장소 정보
+[vars]
+REPO = "JIN-ARTLW/midam-gallery"
+BRANCH = "main"
+ALLOW_ORIGIN = "https://jin-artlw.github.io"
+
+# 비밀 값은 코드/파일에 두지 않고 아래 명령으로 따로 등록합니다:
+#   npx wrangler secret put GITHUB_TOKEN
+#   npx wrangler secret put UPLOAD_PASSWORD

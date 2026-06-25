@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>그림 올리기 · 미담</title>
+  <meta name="robots" content="noindex" />
+
+  <link rel="icon" type="image/png" href="Icon/daisy-full.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Gowun Dodum', sans-serif;
+      color: #2b2b2b;
+      background: #fafafa;
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: radial-gradient(700px 600px at 50% -10%,
+        rgba(255,248,200,0.7) 0%, rgba(255,248,200,0.25) 45%, transparent 75%);
+    }
+    .wrap { max-width: 460px; margin: 0 auto; }
+
+    header { text-align: center; margin-bottom: 26px; }
+    header img { width: 48px; height: 48px; }
+    header h1 { font-family: 'Gowun Batang', serif; font-size: 1.7rem; margin-top: 6px; }
+    header p { color: #777; font-size: 0.9rem; margin-top: 4px; }
+
+    .card {
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      backdrop-filter: blur(12px);
+      padding: 22px 20px;
+    }
+
+    label { display: block; font-size: 1rem; font-weight: 700; margin: 18px 0 8px; }
+    label:first-of-type { margin-top: 0; }
+    .hint { font-weight: 400; color: #999; font-size: 0.82rem; }
+
+    input[type=text], input[type=date], input[type=password], select {
+      width: 100%; padding: 14px; font-family: inherit; font-size: 1.05rem;
+      color: #2b2b2b; background: #fff;
+      border: 1.5px solid #ddd; border-radius: 12px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus, select:focus {
+      border-color: #c9a227; box-shadow: 0 0 0 3px rgba(201,162,39,.15);
+    }
+
+    /* 사진 고르기 (큰 버튼) */
+    .file-zone {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; padding: 26px; text-align: center;
+      border: 2px dashed #d3b94e; border-radius: 14px;
+      background: rgba(255,248,200,.35); color: #8a6d12; cursor: pointer;
+    }
+    .file-zone .ico { font-size: 2.2rem; }
+    .file-zone span { font-size: 1.05rem; font-weight: 700; }
+    #file-input { display: none; }
+    #preview { display: none; width: 100%; margin-top: 14px; border-radius: 12px; }
+
+    .submit {
+      width: 100%; margin-top: 26px; padding: 16px;
+      font-family: inherit; font-size: 1.2rem; font-weight: 700; color: #fff;
+      background: #c9a227; border: none; border-radius: 14px; cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .submit:hover { background: #b08d1c; }
+    .submit:active { transform: scale(.99); }
+    .submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    #msg { margin-top: 18px; padding: 14px; border-radius: 12px; font-size: 1rem; text-align: center; display: none; }
+    #msg.ok   { display: block; background: #e8f5e9; color: #2e7d32; }
+    #msg.err  { display: block; background: #fdecea; color: #c62828; }
+    #msg.work { display: block; background: #fff8e1; color: #8a6d12; }
+
+    .back { display: block; text-align: center; margin-top: 22px; color: #888; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="Icon/daisy-full.png" alt="" />
+      <h1>그림 올리기</h1>
+      <p>새 작품을 미담 갤러리에 올려요</p>
+    </header>
+
+    <form class="card" id="form">
+      <label>사진
+        <span class="hint">— 그림을 찍은 사진이나 스캔 파일을 골라요</span>
+      </label>
+      <label class="file-zone" for="file-input">
+        <span class="ico">📷</span>
+        <span id="file-label">사진 고르기 / 촬영하기</span>
+      </label>
+      <input id="file-input" type="file" accept="image/*" />
+      <img id="preview" alt="미리보기" />
+
+      <label for="title">제목</label>
+      <input id="title" type="text" placeholder="예) 가을 한옥" autocomplete="off" />
+
+      <label for="genre">종류</label>
+      <select id="genre">
+        <option value="수채">수채화</option>
+        <option value="펜화">펜화</option>
+        <option value="채색">채색</option>
+        <option value="소묘">소묘</option>
+        <option value="습작">습작</option>
+        <option value="설명">설명</option>
+        <option value="전시작품">전시작품</option>
+        <option value="기타">기타</option>
+      </select>
+
+      <label for="date">그린 날짜</label>
+      <input id="date" type="date" />
+
+      <label for="password">비밀번호
+        <span class="hint">— 미리 받은 암호를 적어요</span>
+      </label>
+      <input id="password" type="password" autocomplete="current-password" />
+
+      <button class="submit" id="submit" type="submit">올리기</button>
+      <div id="msg"></div>
+    </form>
+
+    <a class="back" href="index.html">← 갤러리로 돌아가기</a>
+  </div>
+
+  <script>
+    /* ───── 설정: Cloudflare Worker 주소를 여기에 붙여넣으세요 ───── */
+    const WORKER_URL = 'https://midam-upload.YOUR-SUBDOMAIN.workers.dev';
+    /* ──────────────────────────────────────────────────────── */
+
+    const $ = id => document.getElementById(id);
+    const fileInput = $('file-input');
+    const preview   = $('preview');
+    const fileLabel = $('file-label');
+    const msg       = $('msg');
+    const submitBtn = $('submit');
+
+    /* 오늘 날짜 기본값 */
+    $('date').value = new Date().toISOString().slice(0, 10);
+
+    /* 사진 고르면 미리보기 */
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      if (!f) return;
+      fileLabel.textContent = f.name;
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(f);
+    });
+
+    function show(type, text) { msg.className = type; msg.textContent = text; }
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file  = fileInput.files[0];
+      const title = $('title').value.trim();
+      const genre = $('genre').value;
+      const date  = $('date').value;
+      const pw    = $('password').value;
+
+      if (!file)  return show('err', '사진을 골라 주세요.');
+      if (!title) return show('err', '제목을 적어 주세요.');
+      if (!date)  return show('err', '날짜를 골라 주세요.');
+      if (!pw)    return show('err', '비밀번호를 적어 주세요.');
+      if (title.includes('_')) return show('err', '제목에 _(밑줄)은 쓸 수 없어요.');
+
+      submitBtn.disabled = true;
+      show('work', '올리는 중이에요… 잠시만 기다려 주세요.');
+
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        fd.append('title', title);
+        fd.append('genre', genre);
+        fd.append('date', date);
+        fd.append('password', pw);
+
+        const res = await fetch(WORKER_URL, { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          show('ok', '올라갔어요! 🌼 1~2분 뒤 갤러리에 나타나요.');
+          $('form').reset();
+          preview.style.display = 'none';
+          fileLabel.textContent = '사진 고르기 / 촬영하기';
+          $('date').value = new Date().toISOString().slice(0, 10);
+        } else if (res.status === 401) {
+          show('err', '비밀번호가 맞지 않아요.');
+        } else {
+          show('err', '올리지 못했어요: ' + (data.error || res.status));
+        }
+      } catch (err) {
+        show('err', '인터넷 연결을 확인해 주세요.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

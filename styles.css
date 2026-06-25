@@ -1,17 +1,22 @@
 /* ========== styles.css ========== */
 
 /* 1. 리셋 & 공통 */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --glow: 255, 248, 200;     /* 배경 글로우 색 (RGB) */
+  --ink: #2b2b2b;
+  --accent: #c9a227;         /* 데이지 골드 */
+  --card-gap: 6px;
 }
+
 body {
-  font-family: sans-serif;
+  font-family: 'Gowun Dodum', sans-serif;
   display: flex;
   min-height: 100vh;
   background: #fafafa;
-  overflow-x: hidden; /* 가로 스크롤 차단 */
+  color: var(--ink);
+  overflow-x: hidden;
 }
 body::before {
   content: "";
@@ -20,114 +25,164 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background: radial-gradient(
-    800px 600px at -120px 50%,
-    rgba(255, 248, 200, 0.6) 0%,
-    rgba(255, 248, 200, 0.35) 30%,
-    rgba(255, 248, 200, 0.1) 60%,
+    900px 700px at -120px 40%,
+    rgba(var(--glow), 0.65) 0%,
+    rgba(var(--glow), 0.35) 30%,
+    rgba(var(--glow), 0.12) 60%,
     transparent 80%
   );
-  filter: blur(6px);
+  filter: blur(8px);
 }
-a {
-  color: inherit;
-  text-decoration: none;
-}
+a { color: inherit; text-decoration: none; }
+.hidden { display: none !important; }
 
-/* 2. 메뉴 버튼: 이미지 컨테이너 */
+/* 2. 메뉴 버튼 */
 #menu-btn {
-  display: none;          /* 기본엔 숨김, 모바일에서 @media 로 보임 */
+  display: none;
   position: fixed;
   top: 12px;
   left: 12px;
   z-index: 1100;
-  background: none;
-  border: none;
-  padding: 0;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50%;
+  padding: 7px;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
 }
-#menu-btn img {
-  display: block;
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
+#menu-btn img { display: block; width: 26px; height: 26px; object-fit: contain; }
 
 /* 3. 사이드바 (글래스모피즘) */
 #sidebar {
-  width: 240px;
-  min-width: 200px;
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.08);
+  width: 250px;
+  min-width: 210px;
+  padding: 26px 24px;
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
   overflow-y: auto;
-  color: #000;
-
-  /* ▶▶ 추가: 데스크톱에서 항상 보이도록 고정 */
-  position: sticky;   /* 부모 영역 기준으로 ‘달라붙음’ */
-  top: 0;             /* 윗부분에 붙이기 */
-  height: 100vh;      /* 뷰포트 전체 높이 */
-}
-#year-list ul {
-  list-style: none;
-  margin-bottom: 2rem;
-}
-#year-list li {
-  margin: 0.6rem 0;
-  line-height: 1.6;
-}
-#year-list a:hover {
-  text-decoration: underline;
-}
-#artist-info h2 {
-  font-size: 1.1rem;
-  margin: 0.5rem 0;
-}
-#artist-info p {
-  margin: 0.7rem 0;
-  line-height: 1.7;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-/* 4. 메인 갤러리 (CSS 멀티컬럼 Masonry) */
+/* 브랜드 헤더 */
+#brand { text-align: center; margin-bottom: 22px; }
+#brand .brand-mark { width: 42px; height: 42px; object-fit: contain; margin-bottom: 6px; }
+#brand h1 {
+  font-family: 'Gowun Batang', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+#brand .brand-sub { font-size: 0.82rem; color: #777; margin-top: 2px; }
+
+/* 검색 */
+#search-box { margin-bottom: 18px; }
+#search-input {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.15);
+}
+
+/* 필터 목록 (장르/연도 공통) */
+#genre-list ul, #year-list ul { list-style: none; }
+#genre-list li, #year-list li { margin: 2px 0; }
+#genre-list a, #year-list a {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+  transition: background 0.15s, color 0.15s;
+}
+#genre-list a:hover, #year-list a:hover {
+  background: rgba(var(--glow), 0.55);
+  color: var(--ink);
+}
+#genre-list a.active, #year-list a.active {
+  background: rgba(201, 162, 39, 0.18);
+  color: #8a6d12;
+  font-weight: 700;
+}
+
+hr { border: none; border-top: 1px solid rgba(0, 0, 0, 0.08); margin: 16px 0; }
+
+#artist-info p { font-size: 0.85rem; line-height: 1.7; color: #555; }
+#artist-info a:hover { text-decoration: underline; }
+
+/* 4. 갤러리 (멀티컬럼 Masonry) */
 #gallery {
   flex: 1;
-  column-width: 300px; /* 최소 카드 너비 */
-  column-gap: 5px;
-  padding: 20px;
+  column-width: 300px;
+  column-gap: var(--card-gap);
+  padding: 22px;
   overflow-y: auto;
 }
 .card {
   display: block;
   width: 100%;
-  margin: 0 0 5px;
-  border: none;
-  background: transparent;
+  margin: 0 0 var(--card-gap);
   break-inside: avoid;
   cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  background: transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-
+.card:hover, .card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+  outline: none;
+}
 .card img {
   width: 100%;
   height: auto;
   display: block;
-  /* min-height 없음 */
+}
+/* 아직 로드 안 된(lazy) 이미지에만 회색 자리 표시 */
+.card img[data-src] {
+  min-height: 180px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* 결과 없음 */
+#empty-msg {
+  position: fixed;
+  top: 50%; left: 55%;
+  transform: translate(-50%, -50%);
+  color: #999;
+  font-size: 1rem;
 }
 
 /* 5. 오버레이 */
 #overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fade 0.2s ease;
 }
-#overlay.hidden {
-  display: none;
-}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
 #overlay-content {
   position: relative;
   display: inline-flex;
@@ -135,92 +190,85 @@ a {
   align-items: flex-end;
   max-width: 90vw;
   max-height: 90vh;
-  width: fit-content; /* 콘텐츠(그림) 폭에 딱 맞춤 */
+  width: fit-content;
 }
 #overlay-img {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 88vw;
+  max-height: 86vh;
   object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 #overlay-meta {
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
   width: 100%;
-  margin: 4px 0 0;
-  padding: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  margin: 10px 0 0;
   line-height: 1.4;
   text-align: right;
   color: #fff;
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.85);
 }
-#overlay-meta h3,
-#overlay-meta p,
-#overlay-meta time {
-  margin: 0;
-}
-#overlay-meta time {
-  font-size: 0.85rem;
-  color: #ddd;
-}
+#overlay-meta h3 { font-family: 'Gowun Batang', serif; font-size: 1.1rem; }
+#overlay-meta p  { color: var(--accent); }
+#overlay-meta time { font-size: 0.85rem; color: #ccc; }
+
+/* 닫기 / 좌우 이동 버튼 */
 #close-btn {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 36px;
-  height: 36px;
-  line-height: 36px;
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #fff;
-  cursor: pointer;
+  top: -4px; right: -4px;
+  width: 40px; height: 40px;
+  background: none; border: none;
+  font-size: 2rem; color: #fff;
+  cursor: pointer; line-height: 1;
 }
-/* 6. 모바일 전용 @media ------------------------------------------------ */
-@media (max-width: 700px) {
-  /* 햄버거 버튼 보이기 */
-  #menu-btn {
-    display: block;
-  }
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px; height: 56px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1001;
+  transition: background 0.15s;
+}
+.nav-btn:hover { background: rgba(255, 255, 255, 0.28); }
+#prev-btn { left: 18px; }
+#next-btn { right: 18px; }
 
-  /* 사이드바 슬라이드‑인 */
+/* 6. 모바일 */
+@media (max-width: 700px) {
+  #menu-btn { display: block; }
+
   #sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    top: 0; left: 0; bottom: 0;
     z-index: 1050;
+    width: 78vw; max-width: 300px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    padding-top: 60px; /* 버튼 아래 컨텐츠 여백 */
+    padding-top: 60px;
   }
-  #sidebar.open {
-    transform: translateX(0);
-  }
+  #sidebar.open { transform: translateX(0); }
 
-  /* 갤러리: 멀티컬럼 Masonry 유지 */
   #gallery {
-    display: block;
+    column-width: 160px;
     column-count: 2;
-    column-width: 100px; /* 모바일 최소 카드 폭 */
-    column-gap: 5px;
-    padding: 20px 16px;
+    padding: 16px 12px;
   }
 
-  /* 모바일에서 캡션 줄바꿈 허용 */
-  #overlay-meta {
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-}
-
-.card img {
-  /* placeholder라도 ‘그림 자리’를 확보 */
-  width: 100%;
-  min-height: 150px;   /* 취향껏: 120~200px 정도 */
+  .nav-btn { width: 44px; height: 44px; font-size: 1.6rem; }
+  #prev-btn { left: 6px; }
+  #next-btn { right: 6px; }
 }

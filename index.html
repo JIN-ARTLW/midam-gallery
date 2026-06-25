@@ -1,38 +1,81 @@
-<!-- ========== index.html (배너 제거 버전) ========== -->
+<!-- ========== index.html ========== -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>미소를 담다, 미담</title>
+
+  <!-- SEO / 소셜 미리보기 -->
+  <meta name="description" content="미소를 담다, 미담 — 수채화·펜화 작품 갤러리" />
+  <meta name="theme-color" content="#fff8c8" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="미소를 담다, 미담" />
+  <meta property="og:description" content="수채화·펜화 작품 갤러리" />
+  <meta property="og:image" content="https://jin-artlw.github.io/midam-gallery/images/루덴시아_수채_2025-07-21.jpeg" />
+  <meta property="og:url" content="https://jin-artlw.github.io/midam-gallery/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" href="Icon/daisy-full.png" />
+  <link rel="apple-touch-icon" href="Icon/daisy-full.png" />
+
+  <!-- 한글 웹폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <button id="menu-btn" aria-label="Menu">
-    <img src="Icon/daisy-full.png" alt="Menu" />
+  <button id="menu-btn" aria-label="메뉴 열기" aria-controls="sidebar" aria-expanded="false">
+    <img src="Icon/daisy-full.png" alt="" />
   </button>
-  <aside id="sidebar">
-    <section id="year-list"></section>
+
+  <aside id="sidebar" aria-label="작품 탐색">
+    <header id="brand">
+      <img src="Icon/daisy-full.png" alt="" class="brand-mark" />
+      <h1>미담</h1>
+      <p class="brand-sub">미소를 담다</p>
+    </header>
+
+    <!-- 검색 -->
+    <div id="search-box">
+      <input id="search-input" type="search" placeholder="작품 제목 검색…"
+             autocomplete="off" aria-label="작품 제목 검색" />
+    </div>
+
+    <!-- 장르 필터 -->
+    <nav id="genre-list" aria-label="장르 필터"></nav>
+
     <hr />
+
+    <!-- 연도 필터 -->
+    <nav id="year-list" aria-label="연도 필터"></nav>
+
+    <hr />
+
     <section id="artist-info">
-      <br>
-      <p>미소를 담다, 미담</p>
-      <br>
-      <p><b>contact : </b><a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
+      <p><b>contact</b><br /><a href="mailto:norangwoo@naver.com">norangwoo@naver.com</a></p>
     </section>
   </aside>
 
   <main id="gallery"></main>
 
+  <!-- 결과 없음 안내 -->
+  <p id="empty-msg" class="hidden">해당하는 작품이 없어요.</p>
+
   <!-- 확대 오버레이 -->
-  <div id="overlay" class="hidden">
+  <div id="overlay" class="hidden" role="dialog" aria-modal="true" aria-label="작품 확대 보기">
+    <button id="prev-btn" class="nav-btn" aria-label="이전 작품">‹</button>
     <div id="overlay-content">
       <img id="overlay-img" alt="" />
       <div id="overlay-meta">
         <h3></h3><p></p><time></time>
       </div>
-      <button id="close-btn" aria-label="close">×</button>
     </div>
+    <button id="next-btn" class="nav-btn" aria-label="다음 작품">›</button>
+    <button id="close-btn" aria-label="닫기">×</button>
   </div>
 
   <script src="script.js" defer></script>

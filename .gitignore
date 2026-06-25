@@ -1,0 +1,5 @@
+# 로컬 개발용
+.claude/
+.DS_Store
+worker/.wrangler/
+worker/node_modules/
