@@ -42,6 +42,54 @@ export default {
     if (password !== env.UPLOAD_PASSWORD)
       return json({ error: '비밀번호가 맞지 않습니다' }, 401, cors);
 
+    const repo   = env.REPO;
+    const branch = env.BRANCH || 'main';
+    const ghHeaders = {
+      'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
+      'Accept': 'application/vnd.github+json',
+      'User-Agent': 'midam-upload-worker',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+    const contentUrl = p =>
+      `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(p).replace(/%2F/g, '/')}`;
+
+    const action = (form.get('action') || 'upload').toString();
+
+    /* ───── 삭제 ───── */
+    if (action === 'delete') {
+      const filename = (form.get('filename') || '').toString();
+      if (!filename || filename.includes('/') || filename.includes('..'))
+        return json({ error: '잘못된 파일명입니다' }, 400, cors);
+
+      const base = filename.replace(/\.[^.]+$/, '');
+      const targets = [`images/${filename}`, `images/webp/${base}.webp`];
+      const deleted = [];
+
+      for (const path of targets) {
+        const url = contentUrl(path);
+        const head = await fetch(`${url}?ref=${branch}`, { headers: ghHeaders });
+        if (!head.ok) continue;                       // 없으면(webp 미생성 등) 건너뜀
+        const sha = (await head.json()).sha;
+        const del = await fetch(url, {
+          method: 'DELETE',
+          headers: { ...ghHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `chore(images): delete ${filename} via manage page`,
+            sha, branch,
+          }),
+        });
+        if (del.ok) deleted.push(path);
+        else if (path === targets[0]) {
+          const detail = await del.text();
+          return json({ error: `삭제 실패 (${del.status})`, detail }, 502, cors);
+        }
+      }
+      if (!deleted.length)
+        return json({ error: '해당 파일을 찾지 못했습니다' }, 404, cors);
+      return json({ ok: true, deleted }, 200, cors);
+    }
+
+    /* ───── 업로드 ───── */
     const file  = form.get('image');
     const title = (form.get('title')  || '').toString().trim();
     const genre = (form.get('genre')  || '').toString().trim();
@@ -64,22 +112,11 @@ export default {
     /* 파일명: 제목_장르_날짜.확장자  (제목/장르의 _ 는 - 로 치환) */
     const safe = s => s.replace(/[_/\\]/g, '-').replace(/\s+/g, ' ').trim();
     const filename = `${safe(title)}_${safe(genre) || '기타'}_${date}.${ext}`;
-    const path = `images/${filename}`;
+    const apiUrl = contentUrl(`images/${filename}`);
 
     /* 이미지 → base64 */
     const buf = await file.arrayBuffer();
     const content = base64(new Uint8Array(buf));
-
-    const repo   = env.REPO;
-    const branch = env.BRANCH || 'main';
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`;
-
-    const ghHeaders = {
-      'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
-      'Accept': 'application/vnd.github+json',
-      'User-Agent': 'midam-upload-worker',
-      'X-GitHub-Api-Version': '2022-11-28',
-    };
 
     /* 같은 이름이 이미 있으면 sha 가져와 덮어쓰기 */
     let sha;

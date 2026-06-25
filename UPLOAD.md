@@ -80,6 +80,27 @@
 
 ---
 
+---
+
+## 🗑 작품 관리(삭제) 페이지
+
+관리 페이지에서 작품을 **삭제**할 수 있습니다.
+- 주소: **https://jin-artlw.github.io/midam-gallery/manage.html**
+- 비밀번호(업로드와 동일)를 입력 → 작품의 **🗑 삭제** 버튼 → 확인하면 삭제
+- 삭제하면 원본과 WebP가 함께 지워지고, 1~2분 뒤 갤러리에서 사라집니다.
+
+### ⚠️ 삭제 기능을 켜려면 Worker를 다시 배포하세요
+삭제 기능은 Worker 코드에 새로 추가됐으므로, **한 번 재배포**해야 작동합니다:
+```bash
+cd /Users/jin-yeseo/code/midam/worker
+npx wrangler deploy
+```
+(대시보드에서 코드를 붙여넣어 배포했다면, `worker/upload-worker.js` 내용을 다시 붙여넣어 Deploy 하세요.)
+
+> 삭제도 업로드와 같은 비밀번호를 씁니다. 삭제는 따로 더 보호하고 싶다면 알려주세요 — 관리자 전용 비밀번호를 분리할 수 있어요.
+
+---
+
 ## 자주 묻는 질문
 
 - **비밀번호를 바꾸고 싶어요** → `npx wrangler secret put UPLOAD_PASSWORD` 다시 실행.
