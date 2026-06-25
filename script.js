@@ -32,9 +32,9 @@ let OVERLAY_I = -1;                        // 오버레이에서 보고 있는 �
 /* 필터 상태 */
 const filter = { year: 'all', genre: 'all', query: '' };
 
-/* 1) 이미지 목록 로드 */
+/* 1) 이미지 목록 로드 (캐시 무력화 — 새 작품/분류 변경이 바로 반영되도록) */
 async function fetchImageList() {
-  const res = await fetch('images/images.json');
+  const res = await fetch(`images/images.json?v=${Date.now()}`, { cache: 'no-cache' });
   if (!res.ok) {
     console.error('❌ images.json 로드 실패:', res.status);
     return [];
